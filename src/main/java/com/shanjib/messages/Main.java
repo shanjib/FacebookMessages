@@ -7,18 +7,26 @@ import java.util.Objects;
 
 public class Main {
 
-  private static final String MESSAGE_DIR = "/Users/istiaqueshanjib/Downloads/facebook/brownmambas/";
-  private static final String MESSAGE_PREFIX = "message_1 copy";
-  private static final FileProcessor PROCESSOR = new FileProcessor();
+  private static final String MESSAGE_DIR = "/Users/istiaqueshanjib/Downloads/facebook/2022-06 Request/facebook-ishanjib(3)/messages/inbox/brownmambasfuckbu_k3wwhhyjpw/";
+  private static final String MESSAGE_PREFIX = "message_";
 
-  public static void main(final String[] args) throws IOException {
+  public static void main(final String[] args) {
     File messageDir = new File(MESSAGE_DIR);
+    StatsProcessor statsProcessor = new StatsProcessor();
     for (File file : Objects.requireNonNull(messageDir.listFiles())) {
       String filename = file.getName();
-      if (filename.startsWith(MESSAGE_PREFIX)) {
-        PROCESSOR.processFile(file);
+      System.out.println("processing " + filename);
+      if (file.isFile() && filename.startsWith(MESSAGE_PREFIX)) {
+        FileProcessor processor = new FileProcessor(file);
+        processor.createMessageFile();
+        processor.processMessages();
+        statsProcessor.addMaps(processor.getSenderToMessages(),
+            processor.getSenderToReactionsReceivedCount(),
+            processor.getGiverToReactionsGivenCount(),
+            processor.getReactionRelationshipCount());
       }
     }
-    PROCESSOR.processStats();
+    System.out.println();
+    statsProcessor.calculateStats();
   }
 }
