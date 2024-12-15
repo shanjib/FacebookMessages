@@ -1,75 +1,75 @@
 package com.shanjib.messages.model;
 
-import java.time.Instant;
+import com.google.common.collect.Sets;
+import com.shanjib.messages.util.DateUtil;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Data;
 
 @Data
-public class Message {
-  private static final LocalDate JANUARY_2016 = LocalDate.of(2016, 1, 1);
-  private static final LocalDate JANUARY_2017 = LocalDate.of(2017, 1, 1);
-  private static final LocalDate JANUARY_2018 = LocalDate.of(2018, 1, 1);
-  private static final LocalDate JANUARY_2019 = LocalDate.of(2019, 1, 1);
-  private static final LocalDate JANUARY_2020 = LocalDate.of(2020, 1, 1);
-  private static final LocalDate JANUARY_2021 = LocalDate.of(2021, 1, 1);
-
+public class Message implements Comparable<Message> {
   private String sender_name;
   private Long timestamp_ms;
   private LocalDate date;
   private String content;
   private String type;
-  private List<Reaction> reactions;
-  private List<Photo> photos;
+  private boolean is_unsent;
+  private boolean is_taken_down;
+  private Set<Reaction> reactions;
+  private List<Media> photos;
+  private List<Media> videos;
+  private List<Media> gifs;
+  private List<Media> files;
 
   public Integer getReactionCount() {
-    if (reactions != null) {
-      return reactions.size();
-    }
-    return 0;
+    return reactions != null ? reactions.size() : 0;
+  }
+
+  public Set<Reaction> getReactions() {
+    return reactions != null ? reactions : Sets.newHashSet();
   }
 
   public LocalDate getDate() {
     if (date == null) {
-      date = Instant.ofEpochMilli(timestamp_ms).atZone(ZoneId.systemDefault()).toLocalDate();
+      date = DateUtil.instantToLocalDate(timestamp_ms);
     }
     return date;
   }
 
-  public boolean isFrom2016() {
-    return getDate().isAfter(JANUARY_2016) && getDate().isBefore(JANUARY_2017);
-  }
-  public boolean isFrom2017() {
-    return getDate().isAfter(JANUARY_2017) && getDate().isBefore(JANUARY_2018);
-  }
-  public boolean isFrom2018() {
-    return getDate().isAfter(JANUARY_2018) && getDate().isBefore(JANUARY_2019);
-  }
-  public boolean isFrom2019() {
-    return getDate().isAfter(JANUARY_2019) && getDate().isBefore(JANUARY_2020);
-  }
-  public boolean isFrom2020() {
-    return getDate().isAfter(JANUARY_2020) && getDate().isBefore(JANUARY_2021);
-  }
-
   public String toString() {
-    return String.join(",",
+    return String.join("",
         getContent(),
-        getReactionCount().toString()
+        " - ", getSender_name(),
+        ", ", getReactionCount().toString() + " reactions"
     );
   }
 
   private String getContent() {
+    if (is_unsent) {
+      return "unsent";
+    }
     if (content != null) {
       return content;
     }
     if (photos != null) {
-      return photos.stream().map(Photo::getUri).collect(Collectors.joining(";"));
+      return photos.stream().map(Media::getUri).collect(Collectors.joining(";"));
+    }
+    if (videos != null) {
+      return videos.stream().map(Media::getUri).collect(Collectors.joining(";"));
+    }
+    if (gifs != null) {
+      return gifs.stream().map(Media::getUri).collect(Collectors.joining(";"));
+    }
+    if (files != null) {
+      return files.stream().map(Media::getUri).collect(Collectors.joining(";"));
     }
     return "something else";
+  }
+
+  @Override
+  public int compareTo(Message message) {
+    return Integer.compare(message.getReactionCount(), getReactionCount());
   }
 }

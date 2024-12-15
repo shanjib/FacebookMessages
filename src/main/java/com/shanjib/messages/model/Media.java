@@ -3,7 +3,7 @@ package com.shanjib.messages.model;
 import lombok.Data;
 
 @Data
-public class Photo {
+public class Media {
   private String uri;
-  private String creation_timestamp;
+  private Long creation_timestamp;
 }
